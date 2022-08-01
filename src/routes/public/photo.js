@@ -8,6 +8,8 @@ router.get('/', photoController.read);
 
 router.post('/', photoController.create);
 
+router.put('/:id', validateIdMiddleware, photoController.update);
+
 router.delete('/:id', validateIdMiddleware, photoController.destroy);
 
 module.exports = router;

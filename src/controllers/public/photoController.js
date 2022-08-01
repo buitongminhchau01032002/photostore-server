@@ -7,7 +7,7 @@ const imageToolkit = require('../../utils/imageToolkit');
 const read = async (req, res, next) => {
     try {
         //todo: Add user info
-        const photos = await Photo.find({ public: true });
+        const photos = await Photo.find({ public: true }).select('-imageId');
         return res.status(200).json({ success: true, photos });
     } catch (err) {
         return next(new ServerError('INTERNAL_SERVER_ERROR', err));
@@ -18,7 +18,7 @@ const read = async (req, res, next) => {
 const readOne = async (req, res, next) => {
     const id = req.params.id;
     try {
-        const photo = await Photo.findById(id);
+        const photo = await Photo.findById(id).select('-imageId');
         //todo: Add user info
         if (!photo) {
             return next(new ClientError('PHOTO_ID_NOT_FOUND'));
@@ -69,6 +69,67 @@ const create = async (req, res, next) => {
     }
 };
 
+//* [PUT] api/public/photo/:id
+const update = async (req, res, next) => {
+    const id = req.params.id;
+    const updateReq = req.body; //* {photo, title, description}
+    const updateObject = {};
+
+    // Check photo
+    let photo;
+    try {
+        photo = await Photo.findById(id);
+        if (!photo) {
+            return next(new ClientError('PHOTO_ID_NOT_FOUND'));
+        }
+        if (!photo.public) {
+            return next(new ClientError('PHOTO_NOT_PUBLIC'));
+        }
+    } catch (err) {
+        return next(new ServerError('INTERNAL_SERVER_ERROR', err));
+    }
+
+    // map to updateOject
+    if (updateReq.title) {
+        updateObject.title = updateReq.title;
+    }
+    if (updateReq.description !== undefined) {
+        updateObject.description = updateReq.description;
+    }
+
+    // Check update image
+    if (updateReq.photo) {
+        let imageResult;
+        // Upload image
+        try {
+            imageResult = await imageToolkit.upload(updateReq.photo);
+            if (!imageResult) {
+                return next(new ServerError('IMAGE_UPLOAD_FAIL'));
+            }
+        } catch (err) {
+            return next(new ServerError('IMAGE_UPLOAD_FAIL', err));
+        }
+        // Delete image
+        try {
+            await imageToolkit.destroy(photo.imageId);
+        } catch (err) {
+            return next(new ServerError('IMAGE_DELETE_FAIL', err));
+        }
+        updateObject.imageId = imageResult.public_id;
+        updateObject.url = imageResult.secure_url || 'https://picsum.photos/200/300';
+    }
+
+    // Update photo
+    try {
+        const newPhoto = await Photo.findByIdAndUpdate(id, updateObject, { new: true }).select(
+            '-imageId'
+        );
+        return res.status(200).json({ success: true, photo: newPhoto });
+    } catch (err) {
+        return next(new ServerError('INTERNAL_SERVER_ERROR', err));
+    }
+};
+
 //* [DELETE] api/public/photo/:id
 const destroy = async (req, res, next) => {
     const id = req.params.id;
@@ -103,4 +164,4 @@ const destroy = async (req, res, next) => {
     }
 };
 
-module.exports = { read, readOne, create, destroy };
+module.exports = { read, readOne, create, destroy, update };
