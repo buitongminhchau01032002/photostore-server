@@ -3,6 +3,10 @@ const Schema = mongoose.Schema;
 
 const PhotoSchema = new Schema(
     {
+        imageId: {
+            type: String,
+            required: true,
+        },
         url: {
             type: String,
             required: true,

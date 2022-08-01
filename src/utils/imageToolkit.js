@@ -13,4 +13,16 @@ const upload = (file) => {
     });
 };
 
-module.exports = { upload };
+const destroy = (public_id) => {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.destroy(public_id, (error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+};
+
+module.exports = { upload, destroy };

@@ -10,7 +10,7 @@ const read = async (req, res, next) => {
         const photos = await Photo.find({ public: true });
         return res.status(200).json({ success: true, photos });
     } catch (err) {
-        next(new ServerError('INTERNAL_SERVER_ERROR', err));
+        return next(new ServerError('INTERNAL_SERVER_ERROR', err));
     }
 };
 
@@ -28,7 +28,7 @@ const readOne = async (req, res, next) => {
         }
         return res.status(200).json({ success: true, photo });
     } catch (err) {
-        next(new ServerError('INTERNAL_SERVER_ERROR', err));
+        return next(new ServerError('INTERNAL_SERVER_ERROR', err));
     }
 };
 
@@ -56,6 +56,7 @@ const create = async (req, res, next) => {
     //todo: Add user info
     try {
         const newPhoto = new Photo({
+            imageId: imageResult.public_id,
             url: imageResult.secure_url || 'https://picsum.photos/200/300',
             title,
             description: description || '',
@@ -68,4 +69,38 @@ const create = async (req, res, next) => {
     }
 };
 
-module.exports = { read, readOne, create };
+//* [DELETE] api/public/photo/:id
+const destroy = async (req, res, next) => {
+    const id = req.params.id;
+
+    // Check photo
+    let photo;
+    try {
+        photo = await Photo.findById(id);
+        if (!photo) {
+            return next(new ClientError('PHOTO_ID_NOT_FOUND'));
+        }
+        if (!photo.public) {
+            return next(new ClientError('PHOTO_NOT_PUBLIC'));
+        }
+    } catch (err) {
+        next(new ServerError('INTERNAL_SERVER_ERROR', err));
+    }
+
+    // Delete image
+    try {
+        await imageToolkit.destroy(photo.imageId);
+    } catch (err) {
+        return next(new ServerError('IMAGE_DELETE_FAIL', err));
+    }
+
+    // Delete photo
+    try {
+        await Photo.findByIdAndDelete(id);
+        return res.status(201).json({ success: true });
+    } catch (err) {
+        return next(new ServerError('INTERNAL_SERVER_ERROR', err));
+    }
+};
+
+module.exports = { read, readOne, create, destroy };
