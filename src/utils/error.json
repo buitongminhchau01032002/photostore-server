@@ -1,0 +1,22 @@
+{
+    "PHOTO_ID_NOT_FOUND": {
+        "status": 400,
+        "message": "Get one photo unsuccessfully! Id not found"
+    },
+    "PHOTO_NOT_PUBLIC": {
+        "status": 403,
+        "message": "Get one photo unsuccessfully! Photo not public"
+    },
+    "INVALID_FIELD": {
+        "status": 400,
+        "message": "Invalid field in response"
+    },
+    "IMAGE_UPLOAD_FAIL": {
+        "status": 400,
+        "message": "Can not upload image!"
+    },
+    "INTERNAL_SERVER_ERROR": {
+        "status": 500,
+        "message": "Internal server error!"
+    }
+}
