@@ -23,6 +23,23 @@
         "status": 400,
         "message": "Can not delete image!"
     },
+    "USERNAME_NOT_FOUND": {
+        "status": 400,
+        "message": "Username not found!"
+    },
+    "INVALID_HEADER_AUTHORIZATION": {
+        "status": 400,
+        "message": "Header 'Authorization' not found or not valid"
+    },
+    "INVALID_TOKEN": {
+        "status": 400,
+        "message": "Token not valid!"
+    },
+    "USER_ALREADY_EXIST": {
+        "status": 400,
+        "message": "Can not create user! User already exist"
+
+    },
     "INTERNAL_SERVER_ERROR": {
         "status": 500,
         "message": "Internal server error!"
