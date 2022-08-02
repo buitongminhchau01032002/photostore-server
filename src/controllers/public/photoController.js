@@ -100,20 +100,14 @@ const update = async (req, res, next) => {
     // Check update image
     if (updateReq.photo) {
         let imageResult;
-        // Upload image
+        // Update image
         try {
-            imageResult = await imageToolkit.upload(updateReq.photo);
+            imageResult = await imageToolkit.update(updateReq.photo, photo.imageId);
             if (!imageResult) {
                 return next(new ServerError('IMAGE_UPLOAD_FAIL'));
             }
         } catch (err) {
             return next(new ServerError('IMAGE_UPLOAD_FAIL', err));
-        }
-        // Delete image
-        try {
-            await imageToolkit.destroy(photo.imageId);
-        } catch (err) {
-            return next(new ServerError('IMAGE_DELETE_FAIL', err));
         }
         updateObject.imageId = imageResult.public_id;
         updateObject.url = imageResult.secure_url || 'https://picsum.photos/200/300';
