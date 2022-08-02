@@ -1,9 +1,9 @@
-const ClientError = require('../../utils/ClientError');
-const ServerError = require('../../utils/ServerError');
-const Photo = require('../../models/Photo');
-const imageToolkit = require('../../utils/imageToolkit');
+const ClientError = require('../utils/ClientError');
+const ServerError = require('../utils/ServerError');
+const Photo = require('../models/Photo');
+const imageToolkit = require('../utils/imageToolkit');
 
-//* [GET] api/public/photo
+//* [GET] api/photo
 const read = async (req, res, next) => {
     try {
         //todo: Add user info
@@ -14,7 +14,7 @@ const read = async (req, res, next) => {
     }
 };
 
-//* [GET] api/public/photo/:id
+//* [GET] api/photo/:id
 const readOne = async (req, res, next) => {
     const id = req.params.id;
     try {
@@ -32,7 +32,7 @@ const readOne = async (req, res, next) => {
     }
 };
 
-//* [POST] api/public/photo
+//* [POST] api/photo
 const create = async (req, res, next) => {
     const { photo, title, description } = req.body;
 
@@ -69,7 +69,7 @@ const create = async (req, res, next) => {
     }
 };
 
-//* [PUT] api/public/photo/:id
+//* [PUT] api/photo/:id
 const update = async (req, res, next) => {
     const id = req.params.id;
     const updateReq = req.body; //* {photo, title, description}
@@ -124,7 +124,7 @@ const update = async (req, res, next) => {
     }
 };
 
-//* [DELETE] api/public/photo/:id
+//* [DELETE] api/photo/:id
 const destroy = async (req, res, next) => {
     const id = req.params.id;
 

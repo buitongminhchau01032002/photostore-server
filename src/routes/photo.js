@@ -1,6 +1,6 @@
 const express = require('express');
-const photoController = require('../../controllers/public/photoController');
-const validateIdMiddleware = require('../../middleware/validateId');
+const photoController = require('../controllers/photoController');
+const validateIdMiddleware = require('../middleware/validateId');
 const router = express.Router();
 
 router.get('/:id', validateIdMiddleware, photoController.readOne);

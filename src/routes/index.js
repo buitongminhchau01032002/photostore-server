@@ -1,6 +1,6 @@
 const express = require('express');
-const photoRoute = require('./photo');
 const router = express.Router();
+const photoRoute = require('./photo');
 
 router.use('/photo', photoRoute);
 

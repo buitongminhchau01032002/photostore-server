@@ -1,4 +1,4 @@
-const errors = require('./error.json');
+const errors = require('../data/errors.json');
 
 class ClientError extends Error {
     constructor(name) {
