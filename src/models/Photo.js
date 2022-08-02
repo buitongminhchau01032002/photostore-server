@@ -22,8 +22,9 @@ const PhotoSchema = new Schema(
             type: Boolean,
             default: true,
         },
-        userId: {
-            type: String,
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'users',
         },
     },
     {

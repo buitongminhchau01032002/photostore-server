@@ -30,7 +30,7 @@ const create = async (req, res, next) => {
         if (checkUser) {
             return next(new ClientError('USER_ALREADY_EXIST'));
         }
-    } catch (e) {
+    } catch (err) {
         return next(new ServerError('INTERNAL_SERVER_ERROR', err));
     }
 

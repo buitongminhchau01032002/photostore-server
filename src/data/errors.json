@@ -9,7 +9,11 @@
     },
     "PHOTO_NOT_PUBLIC": {
         "status": 403,
-        "message": "Photo not public"
+        "message": "Photo not public! Canot get photo"
+    },
+    "PHOTO_HAS_USER": {
+        "status": 403,
+        "message": "This photo belongs to one user"
     },
     "INVALID_FIELD": {
         "status": 400,
@@ -28,11 +32,15 @@
         "message": "Username not found!"
     },
     "INVALID_HEADER_AUTHORIZATION": {
-        "status": 400,
+        "status": 401,
         "message": "Header 'Authorization' not found or not valid"
     },
+    "PHOTO_CAN_NOT_ACCESS": {
+        "status": 401,
+        "message": "Photo can not access by user"
+    },
     "INVALID_TOKEN": {
-        "status": 400,
+        "status": 401,
         "message": "Token not valid!"
     },
     "USER_ALREADY_EXIST": {

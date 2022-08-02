@@ -6,8 +6,20 @@ const imageToolkit = require('../utils/imageToolkit');
 //* [GET] api/photo
 const read = async (req, res, next) => {
     try {
-        //todo: Add user info
-        const photos = await Photo.find({ public: true }).select('-imageId');
+        let photos;
+        if (req.user) {
+            photos = await Photo.find(
+                {
+                    $or: [{ public: true }, { user: req.user._id }],
+                },
+                '-imageId'
+            ).populate('user', 'username displayName avatar');
+        } else {
+            photos = await Photo.find({ public: true }, '-imageId').populate(
+                'user',
+                'username displayName avatar'
+            );
+        }
         return res.status(200).json({ success: true, photos });
     } catch (err) {
         return next(new ServerError('INTERNAL_SERVER_ERROR', err));
@@ -18,12 +30,22 @@ const read = async (req, res, next) => {
 const readOne = async (req, res, next) => {
     const id = req.params.id;
     try {
-        const photo = await Photo.findById(id).select('-imageId');
-        //todo: Add user info
+        const photo = await Photo.findById(id, '-imageId').populate(
+            'user',
+            'username displayName avatar'
+        );
         if (!photo) {
             return next(new ClientError('PHOTO_ID_NOT_FOUND'));
         }
+
+        // check user
         if (!photo.public) {
+            if (req.user) {
+                if (photo.user._id.equals(req.user._id)) {
+                    return res.status(200).json({ success: true, photo });
+                }
+                return next(new ClientError('PHOTO_CAN_NOT_ACCESS'));
+            }
             return next(new ClientError('PHOTO_NOT_PUBLIC'));
         }
         return res.status(200).json({ success: true, photo });
@@ -34,7 +56,7 @@ const readOne = async (req, res, next) => {
 
 //* [POST] api/photo
 const create = async (req, res, next) => {
-    const { photo, title, description } = req.body;
+    const { photo, title, description, public } = req.body;
 
     // Validate field
     if (!photo || !title) {
@@ -53,14 +75,14 @@ const create = async (req, res, next) => {
     }
 
     // Create photo
-    //todo: Add user info
     try {
         const newPhoto = new Photo({
             imageId: imageResult.public_id,
             url: imageResult.secure_url || 'https://picsum.photos/200/300',
             title,
             description: description || '',
-            public: true,
+            public: req.user ? public : true,
+            user: req.user ? req.user._id : undefined,
         });
         await newPhoto.save();
         return res.status(201).json({ success: true, photo: newPhoto });
@@ -72,7 +94,7 @@ const create = async (req, res, next) => {
 //* [PUT] api/photo/:id
 const update = async (req, res, next) => {
     const id = req.params.id;
-    const updateReq = req.body; //* {photo, title, description}
+    const updateReq = req.body; //* {photo, title, description, public}
     const updateObject = {};
 
     // Check photo
@@ -82,8 +104,14 @@ const update = async (req, res, next) => {
         if (!photo) {
             return next(new ClientError('PHOTO_ID_NOT_FOUND'));
         }
-        if (!photo.public) {
-            return next(new ClientError('PHOTO_NOT_PUBLIC'));
+        // check user
+        if (photo.user) {
+            if (!req.user) {
+                return next(new ClientError('PHOTO_HAS_USER'));
+            }
+            if (!photo.user.equals(req.user._id)) {
+                return next(new ClientError('PHOTO_CAN_NOT_ACCESS'));
+            }
         }
     } catch (err) {
         return next(new ServerError('INTERNAL_SERVER_ERROR', err));
@@ -95,6 +123,12 @@ const update = async (req, res, next) => {
     }
     if (updateReq.description !== undefined) {
         updateObject.description = updateReq.description;
+    }
+    if (updateReq.public !== undefined) {
+        updateObject.public = !!updateReq.public;
+    }
+    if (!photo.user) {
+        updateObject.public = true;
     }
 
     // Check update image
@@ -115,9 +149,11 @@ const update = async (req, res, next) => {
 
     // Update photo
     try {
-        const newPhoto = await Photo.findByIdAndUpdate(id, updateObject, { new: true }).select(
-            '-imageId'
-        );
+        const newPhoto = await Photo.findByIdAndUpdate(id, updateObject, {
+            new: true,
+        })
+            .select('-imageId')
+            .populate('user', 'username displayName avatar');
         return res.status(200).json({ success: true, photo: newPhoto });
     } catch (err) {
         return next(new ServerError('INTERNAL_SERVER_ERROR', err));
@@ -135,11 +171,17 @@ const destroy = async (req, res, next) => {
         if (!photo) {
             return next(new ClientError('PHOTO_ID_NOT_FOUND'));
         }
-        if (!photo.public) {
-            return next(new ClientError('PHOTO_NOT_PUBLIC'));
+        // check user
+        if (photo.user) {
+            if (!req.user) {
+                return next(new ClientError('PHOTO_HAS_USER'));
+            }
+            if (!photo.user.equals(req.user._id)) {
+                return next(new ClientError('PHOTO_CAN_NOT_ACCESS'));
+            }
         }
     } catch (err) {
-        next(new ServerError('INTERNAL_SERVER_ERROR', err));
+        return next(new ServerError('INTERNAL_SERVER_ERROR', err));
     }
 
     // Delete image
