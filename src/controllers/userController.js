@@ -4,7 +4,14 @@ const User = require('../models/User');
 const admin = require('../configs/firebase');
 const shortid = require('shortid');
 
-//* [GET] api/user/:username
+//* [GET] api/user
+const read = async (req, res, next) => {
+    if (!req.user) {
+        return next(new ClientError('INVALID_HEADER_AUTHORIZATION'));
+    } else {
+        return res.json({ success: true, user: req.user });
+    }
+};
 
 //* [POST] api/user
 const create = async (req, res, next) => {
@@ -55,4 +62,4 @@ const create = async (req, res, next) => {
 
 //* [DELETE] api/user/:id
 
-module.exports = { create };
+module.exports = { create, read };

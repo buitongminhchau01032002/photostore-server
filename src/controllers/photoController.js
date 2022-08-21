@@ -13,11 +13,11 @@ const read = async (req, res, next) => {
                     $or: [{ public: true }, { user: req.user._id }],
                 },
                 '-imageId'
-            ).populate('user', 'username displayName avatar');
+            ).populate('user', 'username displayName avatar uid');
         } else {
             photos = await Photo.find({ public: true }, '-imageId').populate(
                 'user',
-                'username displayName avatar'
+                'username displayName avatar uid'
             );
         }
         return res.status(200).json({ success: true, photos });
@@ -32,7 +32,7 @@ const readOne = async (req, res, next) => {
     try {
         const photo = await Photo.findById(id, '-imageId').populate(
             'user',
-            'username displayName avatar'
+            'username displayName avatar uid'
         );
         if (!photo) {
             return next(new ClientError('PHOTO_ID_NOT_FOUND'));
