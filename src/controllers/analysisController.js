@@ -8,17 +8,13 @@ const read = async (req, res, next) => {
     try {
         let photoCount = await Photo.count({});
         let userCount = await User.count({});
-        if (photoCount && userCount) {
-            return res.status(200).json({
-                success: true,
-                analysis: {
-                    photoCount,
-                    userCount,
-                },
-            });
-        } else {
-            return next(new ServerError('INTERNAL_SERVER_ERROR', err));
-        }
+        return res.status(200).json({
+            success: true,
+            analysis: {
+                photoCount,
+                userCount,
+            },
+        });
     } catch (err) {
         return next(new ServerError('INTERNAL_SERVER_ERROR', err));
     }
